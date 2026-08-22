@@ -1,0 +1,6 @@
+{
+  "name": "放置修仙RPG",
+  "description": "基于Vue-Idle-Game打造的放置挂机刷装备RPG手游，支持高难度副本、无尽挑战、装备洗练强化、转生系统与离线挂机收益存档。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
