@@ -401,6 +401,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Diamond / Gem Drop on Boss (Requirement #5: Boss drops gold, equip, gems & rare resources)
         var updatedPlayerState = p
+        val isEndless = _battleState.value.isEndlessMode
+        val stageLevel = if (isEndless) p.endlessTowerFloor else p.currentDungeonStage
+
         if (isBoss) {
             val diamondsGained = Random.nextLong(6, 20)
             newDiamonds += diamondsGained
@@ -425,8 +428,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Equipment Drop Logic
         val dropChance = if (isBoss) 100.0 else 8.0
-        val isEndless = _battleState.value.isEndlessMode
-        val stageLevel = if (isEndless) p.endlessTowerFloor else p.currentDungeonStage
 
         if (Random.nextDouble(100.0) < dropChance) {
             val forcedQ = if (isBoss) EquipmentGenerator.rollBossQuality() else null
@@ -729,6 +730,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 ShopItemType.REFORGE_STONE -> {
                     newDiamonds += item.quantity
                 }
+                ShopItemType.GEM, ShopItemType.GEM_POUCH -> {
+                    item.gemType?.let { gt ->
+                        val updatedWithGem = curPlayer.copy(
+                            gold = newGold,
+                            diamonds = newDiamonds,
+                            enhanceStones = newStones
+                        ).addGem(gt, item.gemLevel, item.quantity)
+                        repository.savePlayer(updatedWithGem)
+                        _shopItems.value = _shopItems.value.map {
+                            if (it.id == item.id) it.copy(isPurchased = true) else it
+                        }
+                        showMessage("购买成功！获得了【${item.name}】并存入宝石囊")
+                        return@launch
+                    }
+                }
             }
 
             val updatedPlayer = curPlayer.copy(
@@ -742,6 +758,49 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (it.id == item.id) it.copy(isPurchased = true) else it
             }
             showMessage("购买成功！获得了【${item.name}】")
+        }
+    }
+
+    // Gem Operations (Requirements #3, #4, #5)
+    fun socketGem(item: Equipment, gemType: com.example.domain.model.GemType, level: Int) {
+        val curPlayer = player.value ?: return
+        viewModelScope.launch {
+            val (success, msg) = repository.socketGem(item, gemType, level, curPlayer)
+            showMessage(msg)
+            if (success) {
+                // Refresh selected equipment dialog
+                val updatedEq = repository.getEquipmentByIdDirect(item.id)
+                _selectedEquipment.value = updatedEq
+            }
+        }
+    }
+
+    fun unsocketGem(item: Equipment, gemIndex: Int) {
+        val curPlayer = player.value ?: return
+        viewModelScope.launch {
+            val (success, msg) = repository.unsocketGem(item, gemIndex, curPlayer)
+            showMessage(msg)
+            if (success) {
+                // Refresh selected equipment dialog
+                val updatedEq = repository.getEquipmentByIdDirect(item.id)
+                _selectedEquipment.value = updatedEq
+            }
+        }
+    }
+
+    fun synthesizeGem(gemType: com.example.domain.model.GemType, level: Int) {
+        val curPlayer = player.value ?: return
+        viewModelScope.launch {
+            val (success, msg) = repository.synthesizeGem(gemType, level, curPlayer)
+            showMessage(msg)
+        }
+    }
+
+    fun synthesizeAllGems() {
+        val curPlayer = player.value ?: return
+        viewModelScope.launch {
+            val (count, msg) = repository.synthesizeAllGems(curPlayer)
+            showMessage(msg)
         }
     }
 

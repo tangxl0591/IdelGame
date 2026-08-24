@@ -29,9 +29,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,7 +49,10 @@ import androidx.compose.ui.window.Dialog
 import com.example.domain.model.Equipment
 import com.example.domain.model.EquipmentQuality
 import com.example.domain.model.EquipmentType
+import com.example.domain.model.GemType
 import com.example.domain.model.Player
+import com.example.ui.components.GemPouchDialog
+import com.example.ui.theme.AccentGreen
 import com.example.ui.theme.AccentRed
 import com.example.ui.theme.DarkBackground
 import com.example.ui.theme.DarkSurface
@@ -65,18 +68,28 @@ import com.example.ui.theme.TextSecondary
 fun InventoryScreen(
     player: Player,
     inventoryItems: List<Equipment>,
+    equippedItems: List<Equipment> = emptyList(),
     onSelectEquipment: (Equipment) -> Unit,
     onBatchSell: (EquipmentQuality?) -> Unit,
+    onSynthesizeGem: ((GemType, Int) -> Unit)? = null,
+    onSynthesizeAllGems: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedTypeFilter by remember { mutableStateOf<EquipmentType?>(null) }
     var selectedQualityFilter by remember { mutableStateOf<EquipmentQuality?>(null) }
     var showBatchSellDialog by remember { mutableStateOf(false) }
+    var showGemPouchDialog by remember { mutableStateOf(false) }
+
+    val equippedMap = remember(equippedItems) {
+        equippedItems.associateBy { it.type }
+    }
 
     val filteredItems = inventoryItems.filter { item ->
         (selectedTypeFilter == null || item.type == selectedTypeFilter) &&
         (selectedQualityFilter == null || item.quality == selectedQualityFilter)
     }
+
+    val totalGemsCount = player.gemInventory.values.sum()
 
     Column(
         modifier = modifier
@@ -84,7 +97,7 @@ fun InventoryScreen(
             .background(DarkBackground)
             .padding(12.dp)
     ) {
-        // Top Info & Batch Sell Row
+        // Top Info & Actions Row
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = DarkSurface),
@@ -109,16 +122,28 @@ fun InventoryScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Text("点击装备查看属性、强化、洗练词条与熔炼", color = TextMuted, fontSize = 10.sp)
+                    Text("点击装备对比穿戴、强化与镶嵌宝石", color = TextMuted, fontSize = 10.sp)
                 }
 
-                Button(
-                    onClick = { showBatchSellDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentRed),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text("🔥 一键熔炼", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Button(
+                        onClick = { showGemPouchDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceElevated),
+                        border = BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.6f)),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                    ) {
+                        Text("💎 宝石囊 ($totalGemsCount)", color = GoldPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = { showBatchSellDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = AccentRed),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text("🔥 熔炼", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -238,6 +263,9 @@ fun InventoryScreen(
                         EquipmentType.NECKLACE -> "📿"
                     }
 
+                    val equippedItem = equippedMap[item.type]
+                    val isUpgrade = equippedItem != null && item.powerScore > equippedItem.powerScore
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -249,7 +277,7 @@ fun InventoryScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(6.dp),
+                                .padding(5.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Box(
@@ -286,9 +314,20 @@ fun InventoryScreen(
                                         )
                                     }
                                 }
+                                if (isUpgrade) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .clip(RoundedCornerShape(topStart = 4.dp))
+                                            .background(AccentGreen)
+                                            .padding(horizontal = 2.dp, vertical = 1.dp)
+                                    ) {
+                                        Text("▲", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
                             }
 
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(3.dp))
                             Text(
                                 text = item.name,
                                 color = qualityColor,
@@ -296,16 +335,42 @@ fun InventoryScreen(
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1
                             )
-                            Text(
-                                text = "Lv.${item.level}",
-                                color = TextMuted,
-                                fontSize = 9.sp
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Lv.${item.level}",
+                                    color = TextMuted,
+                                    fontSize = 9.sp
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = "评:${item.powerScore}",
+                                    color = GoldPrimary,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            if (item.maxSockets > 0) {
+                                Text(
+                                    text = "💎 ${item.gems.size}/${item.maxSockets}孔",
+                                    color = if (item.gems.isNotEmpty()) AccentGreen else TextMuted,
+                                    fontSize = 8.sp
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    // Gem Pouch Dialog
+    if (showGemPouchDialog) {
+        GemPouchDialog(
+            player = player,
+            onDismiss = { showGemPouchDialog = false },
+            onSynthesizeGem = { gemType, lvl -> onSynthesizeGem?.invoke(gemType, lvl) },
+            onSynthesizeAllGems = { onSynthesizeAllGems?.invoke() }
+        )
     }
 
     // Batch Sell Dialog with Quality Selection

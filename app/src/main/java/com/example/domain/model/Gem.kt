@@ -73,6 +73,8 @@ data class Gem(
     }
 
     val fullName: String get() = "${level}级${type.gemName}"
+    val iconEmoji: String get() = type.iconEmoji
+    val description: String get() = formatStatBonus()
 }
 
 data class GemInventoryItem(

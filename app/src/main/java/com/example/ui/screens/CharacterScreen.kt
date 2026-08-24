@@ -27,6 +27,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,8 +41,10 @@ import androidx.compose.ui.unit.sp
 import com.example.domain.model.CharacterClass
 import com.example.domain.model.Equipment
 import com.example.domain.model.EquipmentType
+import com.example.domain.model.GemType
 import com.example.domain.model.Player
 import com.example.domain.model.PlayerStats
+import com.example.ui.components.GemPouchDialog
 import com.example.ui.components.formatNumber
 import com.example.ui.theme.AccentCyan
 import com.example.ui.theme.AccentGreen
@@ -61,8 +67,13 @@ fun CharacterScreen(
     equippedItems: List<Equipment>,
     onSelectEquipment: (Equipment) -> Unit,
     onOpenProfileManager: () -> Unit,
+    onSynthesizeGem: ((GemType, Int) -> Unit)? = null,
+    onSynthesizeAllGems: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    var showGemPouchDialog by remember { mutableStateOf(false) }
+    val totalGemsCount = player.gemInventory.values.sum()
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -171,18 +182,30 @@ fun CharacterScreen(
                         fontWeight = FontWeight.ExtraBold
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(GoldDark.copy(alpha = 0.2f))
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = if (player.reincarnationCount > 0) "${player.reincarnationCount}转 · Lv.${player.level}" else "Lv.${player.level}",
-                        color = GoldPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Button(
+                        onClick = { showGemPouchDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceElevated),
+                        border = BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.6f)),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text("💎 宝石囊 ($totalGemsCount)", color = GoldPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(GoldDark.copy(alpha = 0.2f))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = if (player.reincarnationCount > 0) "${player.reincarnationCount}转 · Lv.${player.level}" else "Lv.${player.level}",
+                            color = GoldPrimary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -208,7 +231,7 @@ fun CharacterScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("⚔️ 当前已穿戴装备", color = GoldPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text("点击槽位查看属性与强化洗练", color = TextSecondary, fontSize = 11.sp)
+                    Text("点击槽位查看评分、词条与镶嵌宝石", color = TextSecondary, fontSize = 11.sp)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -276,6 +299,15 @@ fun CharacterScreen(
             }
         }
     }
+
+    if (showGemPouchDialog) {
+        GemPouchDialog(
+            player = player,
+            onDismiss = { showGemPouchDialog = false },
+            onSynthesizeGem = { gemType, lvl -> onSynthesizeGem?.invoke(gemType, lvl) },
+            onSynthesizeAllGems = { onSynthesizeAllGems?.invoke() }
+        )
+    }
 }
 
 @Composable
@@ -314,6 +346,22 @@ fun GearSlot(
                             color = Color.Black,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                }
+                if (equipment.gems.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .clip(RoundedCornerShape(topEnd = 6.dp))
+                            .background(AccentGreen)
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = "💎${equipment.gems.size}",
+                            color = Color.White,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }

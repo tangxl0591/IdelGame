@@ -181,7 +181,7 @@ object EquipmentGenerator {
         var baseHp = 0
         var baseDef = 0
 
-        val statBase = (lvl.toDouble().pow(1.18) * 8.5).roundToInt().coerceAtLeast(10)
+        val statBase = (lvl.toDouble().pow(1.35) * 14.0 + (lvl * 18.0)).roundToInt().coerceAtLeast(18)
         val qualityMult = quality.statMultiplier
 
         when (type) {
@@ -239,25 +239,22 @@ object EquipmentGenerator {
     private fun rollQuality(): EquipmentQuality {
         val roll = Random.nextDouble(100.0)
         return when {
-            roll < 1.5 -> EquipmentQuality.MYTHIC  // 1.5%
-            roll < 5.5 -> EquipmentQuality.GOLD    // 4.0%
-            roll < 13.0 -> EquipmentQuality.RED    // 7.5%
-            roll < 26.0 -> EquipmentQuality.YELLOW // 13.0%
-            roll < 46.0 -> EquipmentQuality.BLUE   // 20.0%
-            roll < 72.0 -> EquipmentQuality.GREEN  // 26.0%
-            else -> EquipmentQuality.WHITE         // 28.0%
+            roll < 14.0 -> EquipmentQuality.BLUE   // 14.0%
+            roll < 50.0 -> EquipmentQuality.GREEN  // 36.0%
+            else -> EquipmentQuality.WHITE         // 50.0%
         }
     }
 
     fun rollBossQuality(): EquipmentQuality {
         val roll = Random.nextDouble(100.0)
+        // Boss high-tier (Mythic + Gold + Red) < 3.0%
         return when {
-            roll < 6.0 -> EquipmentQuality.MYTHIC   // 6.0% Boss mythic chance
-            roll < 18.0 -> EquipmentQuality.GOLD    // 12.0%
-            roll < 38.0 -> EquipmentQuality.RED     // 20.0%
-            roll < 65.0 -> EquipmentQuality.YELLOW  // 27.0%
-            roll < 90.0 -> EquipmentQuality.BLUE    // 25.0%
-            else -> EquipmentQuality.GREEN          // 10.0%
+            roll < 0.3 -> EquipmentQuality.MYTHIC  // 0.3%
+            roll < 1.0 -> EquipmentQuality.GOLD    // 0.7%
+            roll < 2.8 -> EquipmentQuality.RED     // 1.8% (Total high tier = 2.8% < 3%)
+            roll < 37.8 -> EquipmentQuality.YELLOW // 35.0%
+            roll < 82.8 -> EquipmentQuality.BLUE   // 45.0%
+            else -> EquipmentQuality.GREEN         // 17.2%
         }
     }
 

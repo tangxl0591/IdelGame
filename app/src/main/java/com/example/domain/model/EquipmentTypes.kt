@@ -26,13 +26,13 @@ enum class EquipmentQuality(
     val meltStoneRate: Int,
     val maxGemSockets: Int
 ) {
-    WHITE("白色", 0xFFE0E0E0, 1, 0.8, 50, 1, 0),
-    GREEN("绿色", 0xFF4CAF50, 2, 1.1, 120, 2, 0),
-    BLUE("蓝色", 0xFF2196F3, 3, 1.5, 350, 3, 2),
-    YELLOW("黄色", 0xFFFFD700, 4, 2.2, 1000, 5, 3),
-    RED("红色", 0xFFFF5252, 5, 3.3, 3000, 8, 4),
-    GOLD("金色", 0xFFFF9800, 6, 4.8, 8000, 15, 5),
-    MYTHIC("神话", 0xFFE040FB, 7, 7.5, 25000, 30, 6);
+    WHITE("白色", 0xFFE0E0E0, 1, 1.0, 50, 1, 0),
+    GREEN("绿色", 0xFF4CAF50, 2, 1.5, 120, 2, 0),
+    BLUE("蓝色", 0xFF2196F3, 3, 2.4, 350, 3, 2),
+    YELLOW("黄色", 0xFFFFD700, 4, 3.8, 1000, 5, 3),
+    RED("红色", 0xFFFF5252, 5, 6.0, 3000, 8, 4),
+    GOLD("金色", 0xFFFF9800, 6, 9.5, 8000, 15, 5),
+    MYTHIC("神话", 0xFFE040FB, 7, 15.0, 25000, 30, 6);
 
     val composeColor: Color get() = Color(colorHex)
 }

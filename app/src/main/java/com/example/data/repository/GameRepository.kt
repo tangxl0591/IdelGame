@@ -9,6 +9,9 @@ import com.example.domain.model.Equipment
 import com.example.domain.model.EquipmentGenerator
 import com.example.domain.model.EquipmentQuality
 import com.example.domain.model.EquipmentType
+import com.example.domain.model.Gem
+import com.example.domain.model.GemCategory
+import com.example.domain.model.GemType
 import com.example.domain.model.MonsterGenerator
 import com.example.domain.model.OfflineGainSummary
 import com.example.domain.model.Player
@@ -66,6 +69,10 @@ class GameRepository(private val database: AppDatabase) {
 
     suspend fun getInventoryItemsDirect(playerId: String): List<Equipment> = withContext(Dispatchers.IO) {
         equipmentDao.getInventoryItemsDirect(playerId).map { Converters.toDomain(it) }
+    }
+
+    suspend fun getEquipmentByIdDirect(id: String): Equipment? = withContext(Dispatchers.IO) {
+        equipmentDao.getById(id)?.let { Converters.toDomain(it) }
     }
 
     suspend fun initializeDefaultProfilesIfNeeded(): Player = withContext(Dispatchers.IO) {

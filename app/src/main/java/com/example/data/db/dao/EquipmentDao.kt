@@ -26,6 +26,9 @@ interface EquipmentDao {
     @Query("SELECT * FROM equipment WHERE playerId = :playerId AND isEquipped = 0 ORDER BY orderTimestamp DESC")
     suspend fun getInventoryItemsDirect(playerId: String): List<EquipmentEntity>
 
+    @Query("SELECT * FROM equipment WHERE id = :id LIMIT 1")
+    suspend fun getById(id: String): EquipmentEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(equipment: EquipmentEntity)
 

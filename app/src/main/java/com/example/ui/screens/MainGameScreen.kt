@@ -161,13 +161,18 @@ fun MainGameScreen(
                     stats = stats,
                     equippedItems = equippedItems,
                     onSelectEquipment = viewModel::selectEquipment,
-                    onOpenProfileManager = { showProfileDialog = true }
+                    onOpenProfileManager = { showProfileDialog = true },
+                    onSynthesizeGem = viewModel::synthesizeGem,
+                    onSynthesizeAllGems = viewModel::synthesizeAllGems
                 )
                 2 -> InventoryScreen(
                     player = currentPlayer,
                     inventoryItems = inventoryItems,
+                    equippedItems = equippedItems,
                     onSelectEquipment = viewModel::selectEquipment,
-                    onBatchSell = viewModel::batchSell
+                    onBatchSell = viewModel::batchSell,
+                    onSynthesizeGem = viewModel::synthesizeGem,
+                    onSynthesizeAllGems = viewModel::synthesizeAllGems
                 )
                 3 -> DungeonScreen(
                     player = currentPlayer,
@@ -222,8 +227,10 @@ fun MainGameScreen(
 
     // Equipment Detail Dialog
     selectedEquipment?.let { eq ->
+        val equippedComparison = if (!eq.isEquipped) equippedItems.find { it.type == eq.type } else null
         EquipmentDetailDialog(
             equipment = eq,
+            equippedComparison = equippedComparison,
             player = currentPlayer,
             onDismiss = { viewModel.selectEquipment(null) },
             onEquip = viewModel::equip,
@@ -231,7 +238,9 @@ fun MainGameScreen(
             onEnhance = viewModel::enhance,
             onReforge = viewModel::reforge,
             onToggleLock = viewModel::toggleLock,
-            onSell = viewModel::sell
+            onSell = viewModel::sell,
+            onSocketGem = viewModel::socketGem,
+            onUnsocketGem = viewModel::unsocketGem
         )
     }
 

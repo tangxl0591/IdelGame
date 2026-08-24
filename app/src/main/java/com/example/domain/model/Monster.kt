@@ -80,7 +80,7 @@ object MonsterGenerator {
         val defense = ((4.0 + baseScale * 2.2) * defMultiplier).roundToLong().coerceAtLeast(1L)
 
         val exp = ((25.0 + baseScale * 14.0) * (if (isBoss) 5.0 else 1.0)).roundToLong()
-        val gold = ((15.0 + baseScale * 10.0) * (if (isBoss) 6.0 else 1.0)).roundToLong()
+        val gold = ((4.0 + (lvl * 1.5) + (baseScale * 1.8)) * (if (isBoss) 4.0 else 1.0)).roundToLong().coerceAtLeast(3L)
 
         return Monster(
             id = "mon_${System.currentTimeMillis()}_${Random.nextInt(1000)}",

@@ -122,7 +122,7 @@ object Converters {
                 defenseLevel = entity.defenseTalentLevel,
                 critLevel = entity.critTalentLevel,
                 lifestealLevel = entity.lifestealTalentLevel,
-                luckyTalentLevel = entity.luckyTalentLevel,
+                luckyLevel = entity.luckyTalentLevel,
                 goldExpLevel = entity.goldExpTalentLevel
             ),
             currentDungeonStage = entity.currentDungeonStage,
